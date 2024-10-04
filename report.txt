@@ -1,0 +1,66 @@
+- The name of your recursive goblin movement function and the name of the file it's implemented in, or else a statement that your goblin movement function is not recursive. (Make this the first thing, to help the grader find the function.)
+- a high-level description of your goblin movement function.
+- a high-level description of how you generate a level with rooms connected by corridors (or as much as you were able to implement).
+- a list of all functionality that you didn't finish, as well as known bugs in your implementations or serious inefficiencies, e.g. "I couldn't get goblins to move correctly, so I made them move like Bogeymen."
+
+
+------------------------------------------------------------------
+1.
+Name of file containing recursive function: Actor.cpp
+Name of recusive function: findShortestPath
+
+2.
+helper function
+- canMove:
+    check if the move in the next direction is moveable
+    
+recursive function
+- findShortestPath:
+    parameters - game grid, starting row, starting col, ending row, ending col, min_dist (use to compare the distance between each viable path and store the shortest distance), distance, a vector that keeps tracks of the path visited, a vector that keeps tracks the shortest path
+    
+    - first pushes the current spot inside the vector of path visited
+    - if current location is the destination:
+        - compare the minimun distance with the distance traveled -> if the distance travel is less than mininum distance (indicating that there is a shorter path)
+            - clear the shortestPath vector
+            - and set the shortest path vector to the path that have been visited (stored in the path vector)
+            - then reset min_dist to distance of the new shortest path
+            - remove the current location from path (so we can continue to check if other path reaches current location (which is the destination)
+            - return (so the loop doesn't continue infinitely)
+    - else (if current point is not the destination)
+        - check all four direction surrounding the current point and see if they can be visited/moved to
+        - if so recurse thru the same function looking for the shortest distance in that path
+        - if not move onto the next direction
+        
+    if all four direction is blocked
+    - pop the current location from path (indicating that it's not a valid path)
+    
+Overall idea:
+    - path stores the path visited but if it isn't a valid path to the destination, all coordinates are poped from path
+    - but if path does reach destination, the path is compared to the shortest path (kept track by min_dist) if the current path is shorter than previous shortest path, it clears the vector holding coordinates of the shortestPath and stores the new shortest path inside shortestPath
+    - in the end, the shortestPath vector will hold the coordinates of the shortest path that will lead the Goblin to the player
+    
+wrapper function
+- canSmell:
+    - sets min_distance to the goblin smell + 1
+    - after calling findShortestPath funciton, if the min_distance between player is greater than goblin smell (16 and above), the path to player doesn't exist
+    --> this function decides whether or not the goblin will move
+
+
+3.
+- levels are implemented by the nextLevel() function inside Temple.cpp
+- everytime the function is called, a for loop is used to loop thru each monster in the temple and each monster is deleted from the map then set to a nullptr. The number of monsters are also set to zero
+- then all objects in the temple are removed in the same way teh monster is removed (for loop, deleted, then set to nullptr), the object vector is then cleared
+- the vectors containing the rooms of the temple and validPairs are also cleared
+- the member variable m_level is then incremented by one indicating the temple is moving on to the next level
+- after everything is cleared, the temple is generated just like how the temple constructor generated the first level
+    - calling the generatedTemple function which generates a whole temple of walls then adds room to the temple
+        - each room is declared as structs that includes the starting row, column, height, and width (all of which are determined by randint)
+        - before creating each room, it is made sure that the new room created doesn't overlap with any other rooms (which is checked by comparing all coordinated with the temple, if all coordinate is a wall)
+        - if no overlap, then the function sets all the coordinate of room as empty spaces in the temple
+        - if there is an overlap, the function calls a recursive function of drawRoom and decrements the number of times ran (which makes sure that the function only runs a certain number of times)
+    - the corridors are then built by looping thru each room made (which is kept in a vector) and takes the middle of the room and connects it to the middle of the room of the next room, it loops until all rooms are connected
+
+
+4. Notable issue:
+- goblin recursion function take a while to load between each move
+    - code works fine without the recursive function and doesn't take time to load (maybe easier to remove recursive function when grading)
